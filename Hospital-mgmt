@@ -1,0 +1,120 @@
+import java.sql.*;
+import java.util.Scanner;
+
+public class HospitalManagementSystem {
+
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/hospital_db";
+    private static final String USER = "root";
+    private static final String PASS = "password";
+
+    public static Connection connect() {
+        Connection conn = null;
+        try {
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);
+            System.out.println("Database connected successfully.");
+        } catch (SQLException e) {
+            System.out.println("Connection failed!");
+            e.printStackTrace();
+        }
+        return conn;
+    }
+
+    public static void addPatient(Connection conn) throws SQLException {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Enter Patient Name: ");
+        String name = sc.nextLine();
+        System.out.println("Enter Age: ");
+        int age = sc.nextInt();
+        sc.nextLine();  // Consume newline
+        System.out.println("Enter Gender: ");
+        String gender = sc.nextLine();
+        System.out.println("Enter Address: ");
+        String address = sc.nextLine();
+        System.out.println("Enter Contact Number: ");
+        String contact = sc.nextLine();
+
+        String sql = "INSERT INTO Patients (name, age, gender, address, contact_number) VALUES (?, ?, ?, ?, ?)";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, name);
+        pstmt.setInt(2, age);
+        pstmt.setString(3, gender);
+        pstmt.setString(4, address);
+        pstmt.setString(5, contact);
+        pstmt.executeUpdate();
+        System.out.println("Patient added successfully.");
+    }
+
+    public static void addDoctor(Connection conn) throws SQLException {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Enter Doctor Name: ");
+        String name = sc.nextLine();
+        System.out.println("Enter Specialization: ");
+        String specialization = sc.nextLine();
+        System.out.println("Enter Contact Number: ");
+        String contact = sc.nextLine();
+
+        String sql = "INSERT INTO Doctors (name, specialization, contact_number) VALUES (?, ?, ?)";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, name);
+        pstmt.setString(2, specialization);
+        pstmt.setString(3, contact);
+        pstmt.executeUpdate();
+        System.out.println("Doctor added successfully.");
+    }
+
+    public static void bookAppointment(Connection conn) throws SQLException {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Enter Patient ID: ");
+        int patientId = sc.nextInt();
+        System.out.println("Enter Doctor ID: ");
+        int doctorId = sc.nextInt();
+        System.out.println("Enter Appointment Date (YYYY-MM-DD): ");
+        String date = sc.next();
+
+        String sql = "INSERT INTO Appointments (patient_id, doctor_id, appointment_date) VALUES (?, ?, ?)";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setInt(1, patientId);
+        pstmt.setInt(2, doctorId);
+        pstmt.setDate(3, Date.valueOf(date));
+        pstmt.executeUpdate();
+        System.out.println("Appointment booked successfully.");
+    }
+
+    public static void main(String[] args) {
+        Connection conn = connect();
+        if (conn != null) {
+            Scanner sc = new Scanner(System.in);
+            try {
+                while (true) {
+                    System.out.println("Hospital Management System");
+                    System.out.println("1. Add Patient");
+                    System.out.println("2. Add Doctor");
+                    System.out.println("3. Book Appointment");
+                    System.out.println("4. Exit");
+                    System.out.print("Enter your choice: ");
+                    int choice = sc.nextInt();
+
+                    switch (choice) {
+                        case 1:
+                            addPatient(conn);
+                            break;
+                        case 2:
+                            addDoctor(conn);
+                            break;
+                        case 3:
+                            bookAppointment(conn);
+                            break;
+                        case 4:
+                            System.out.println("Exiting...");
+                            conn.close();
+                            return;
+                        default:
+                            System.out.println("Invalid choice! Try again.");
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
